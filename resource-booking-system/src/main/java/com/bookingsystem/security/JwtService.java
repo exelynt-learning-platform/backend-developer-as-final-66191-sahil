@@ -3,6 +3,8 @@ package com.bookingsystem.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import com.bookingsystem.exception.JwtConfigurationException;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,20 @@ public class JwtService {
 
     @Value("${app.jwt.expiration-ms}")
     private long expirationMs;
+
+    @PostConstruct
+    void validateConfiguration() {
+        try {
+            byte[] decodedSecret = java.util.Base64.getDecoder().decode(secret);
+            if (decodedSecret.length < 32) {
+                throw new JwtConfigurationException(
+                    "Invalid JWT_SECRET: Base64 secret must decode to at least 32 bytes (256 bits)");
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new JwtConfigurationException(
+                    "Invalid JWT_SECRET: value must be valid Base64 and decode to at least 32 bytes (256 bits)", ex);
+        }
+    }
 
     private SecretKey key() {
         // Secret must be a Base64-encoded string of at least 256 bits for HS256.

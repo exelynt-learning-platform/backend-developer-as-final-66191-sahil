@@ -47,8 +47,8 @@ public class ReservationService {
             throw new BadRequestException("Resource '" + resource.getName() + "' is not currently available for booking");
         }
 
-        var overlapping = reservationRepository.findByResourceIdAndStatusNotAndStartTimeLessThanAndEndTimeGreaterThan(
-                resource.getId(), ReservationStatus.CANCELLED, request.endTime(), request.startTime());
+        var overlapping = reservationRepository.findActiveOverlappingReservations(
+            resource.getId(), ReservationStatus.CANCELLED, request.endTime(), request.startTime());
         if (!overlapping.isEmpty()) {
             throw new ReservationConflictException(
                     "Resource '" + resource.getName() + "' is already booked for the requested time window");

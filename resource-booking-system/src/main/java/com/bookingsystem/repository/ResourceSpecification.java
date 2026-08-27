@@ -1,6 +1,7 @@
 package com.bookingsystem.repository;
 
 import com.bookingsystem.entity.Resource;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -13,7 +14,7 @@ public final class ResourceSpecification {
 
     public static Specification<Resource> build(String type, Boolean available) {
         return (root, query, cb) -> {
-            var predicates = cb.conjunction();
+            Predicate predicates = cb.conjunction();
 
             if (type != null && !type.isBlank()) {
                 predicates = cb.and(predicates, cb.equal(cb.upper(root.get("type")), type.toUpperCase()));

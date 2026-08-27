@@ -3,6 +3,7 @@ package com.bookingsystem.repository;
 import com.bookingsystem.entity.Reservation;
 import com.bookingsystem.entity.ReservationStatus;
 import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 
 import java.math.BigDecimal;
 
@@ -19,7 +20,7 @@ public final class ReservationSpecification {
                                                      BigDecimal minPrice,
                                                      BigDecimal maxPrice) {
         return (root, query, cb) -> {
-            var predicates = cb.conjunction();
+            Predicate predicates = cb.conjunction();
 
             if (ownerUserId != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("user").get("id"), ownerUserId));
