@@ -61,6 +61,7 @@ Copy `.env.example` to `.env` (or export these variables in your shell / CI) and
 | `JWT_SECRET`             | (dev-only default baked in, **override in prod**)            | Base64-encoded HMAC secret, must decode to ≥256 bits |
 | `JWT_EXPIRATION_MS`      | `86400000` (24h)                                              | Token lifetime in milliseconds                     |
 | `SERVER_PORT`            | `8080`                                                        | HTTP port                                          |
+| `CORS_ALLOWED_ORIGINS`   | `http://localhost:3000`                                       | Comma-separated browser origins allowed to call the API |
 
 Generate a secure JWT secret with:
 ```bash

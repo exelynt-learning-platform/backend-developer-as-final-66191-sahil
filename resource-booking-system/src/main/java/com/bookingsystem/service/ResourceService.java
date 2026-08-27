@@ -4,10 +4,10 @@ import com.bookingsystem.dto.resource.ResourceRequest;
 import com.bookingsystem.dto.resource.ResourceResponse;
 import com.bookingsystem.exception.ResourceNotFoundException;
 import com.bookingsystem.repository.ResourceRepository;
+import com.bookingsystem.repository.ResourceSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,17 +19,7 @@ public class ResourceService {
 
     @Transactional(readOnly = true)
     public Page<ResourceResponse> list(String type, Boolean available, Pageable pageable) {
-        Specification<com.bookingsystem.entity.Resource> spec = (root, query, cb) -> {
-            var predicate = cb.conjunction();
-            if (type != null && !type.isBlank()) {
-                predicate = cb.and(predicate, cb.equal(cb.upper(root.get("type")), type.toUpperCase()));
-            }
-            if (available != null) {
-                predicate = cb.and(predicate, cb.equal(root.get("available"), available));
-            }
-            return predicate;
-        };
-
+        var spec = ResourceSpecification.build(type, available);
         return resourceRepository.findAll(spec, pageable).map(ResourceResponse::from);
     }
 

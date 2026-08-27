@@ -39,8 +39,9 @@ public class ReservationService {
             throw new BadRequestException("endTime must be after startTime");
         }
 
-        Resource resource = resourceRepository.findById(request.resourceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + request.resourceId()));
+        Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Resource to reserve not found with id: " + request.resourceId()));
 
         if (!resource.isAvailable()) {
             throw new BadRequestException("Resource '" + resource.getName() + "' is not currently available for booking");
@@ -107,7 +108,8 @@ public class ReservationService {
         }
 
         Resource resource = resourceRepository.findById(request.resourceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + request.resourceId()));
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Replacement resource not found with id: " + request.resourceId()));
 
         reservation.setResource(resource);
         reservation.setStartTime(request.startTime());
