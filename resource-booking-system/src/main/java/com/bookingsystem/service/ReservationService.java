@@ -85,14 +85,16 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public ReservationResponse getById(Long id, User principal) {
-        Reservation reservation = findEntity(id);
-        assertOwnerOrAdmin(reservation, principal);
+        Reservation reservation = findAuthorizedEntity(id, principal);
         return ReservationResponse.from(reservation);
     }
 
     /** ADMIN-only: transition a reservation's status (e.g. PENDING -> CONFIRMED, or -> CANCELLED). */
     @Transactional
     public ReservationResponse updateStatus(Long id, ReservationStatus newStatus) {
+        if (newStatus == null) {
+            throw new BadRequestException("status is required");
+        }
         Reservation reservation = findEntity(id);
         reservation.setStatus(newStatus);
         return ReservationResponse.from(reservation);
@@ -135,8 +137,7 @@ public class ReservationService {
     /** Owner may cancel their own PENDING/CONFIRMED reservation; ADMIN may cancel any. */
     @Transactional
     public ReservationResponse cancel(Long id, User principal) {
-        Reservation reservation = findEntity(id);
-        assertOwnerOrAdmin(reservation, principal);
+        Reservation reservation = findAuthorizedEntity(id, principal);
 
         if (reservation.getStatus() == ReservationStatus.CANCELLED) {
             throw new BadRequestException("Reservation is already cancelled");
@@ -159,6 +160,12 @@ public class ReservationService {
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("You may only access your own reservations");
         }
+    }
+
+    private Reservation findAuthorizedEntity(Long id, User principal) {
+        Reservation reservation = findEntity(id);
+        assertOwnerOrAdmin(reservation, principal);
+        return reservation;
     }
 
     private Reservation findEntity(Long id) {
