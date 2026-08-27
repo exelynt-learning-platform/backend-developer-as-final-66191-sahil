@@ -1,6 +1,7 @@
 package com.bookingsystem.config;
 
 import com.bookingsystem.dto.common.ErrorResponse;
+import com.bookingsystem.exception.CorsConfigurationException;
 import com.bookingsystem.security.JwtAuthFilter;
 import com.bookingsystem.security.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,7 +115,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
             if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
                     || !allowedOrigins.equals(allowedOrigins.trim())) {
-                throw new IllegalStateException("CORS must specify exactly one explicit allowed origin");
+                    throw new CorsConfigurationException(
+                        "Invalid CORS_ALLOWED_ORIGINS: configure exactly one explicit browser origin " +
+                            "without wildcards, commas, or surrounding whitespace.");
         }
             configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

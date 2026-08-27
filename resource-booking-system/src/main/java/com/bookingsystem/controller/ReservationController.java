@@ -37,7 +37,8 @@ public class ReservationController {
 
     @GetMapping
     @Operation(summary = "List reservations. ADMIN sees all; USER sees only their own. " +
-            "Supports filtering by status/minPrice/maxPrice, pagination and sorting.")
+            "Supports filtering by status/minPrice/maxPrice, pagination and sorting. " +
+            "Defaults to 20 results per page sorted by id ascending.")
     public ResponseEntity<Page<ReservationResponse>> list(
             // The service uses the principal's role to determine the query scope.
             @AuthenticationPrincipal User principal,
