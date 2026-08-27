@@ -27,9 +27,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -111,15 +109,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-            if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
-                    || !allowedOrigins.equals(allowedOrigins.trim())) {
-                    throw new CorsConfigurationException(
-                        "Invalid CORS_ALLOWED_ORIGINS: configure exactly one explicit browser origin " +
+        if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
+                || !allowedOrigins.equals(allowedOrigins.trim())) {
+            throw new CorsConfigurationException(
+                    "Invalid CORS_ALLOWED_ORIGINS: configure exactly one explicit browser origin " +
                             "without wildcards, commas, or surrounding whitespace.");
         }
-            configuration.setAllowedOrigins(List.of(allowedOrigins));
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
