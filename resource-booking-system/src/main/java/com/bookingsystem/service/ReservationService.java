@@ -41,7 +41,7 @@ public class ReservationService {
 
         Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
             .orElseThrow(() -> new ResourceNotFoundException(
-                "Resource to reserve not found with id: " + request.resourceId()));
+                "Resource with id " + request.resourceId() + " does not exist, so it cannot be reserved."));
 
         if (!resource.isAvailable()) {
             throw new BadRequestException("Resource '" + resource.getName() + "' is not currently available for booking");
@@ -96,8 +96,21 @@ public class ReservationService {
             throw new BadRequestException("status is required");
         }
         Reservation reservation = findEntity(id);
+        if (newStatus != ReservationStatus.CANCELLED) {
+            Resource resource = resourceRepository.findByIdForUpdate(reservation.getResource().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Reservation resource not found"));
+            if (!resource.isAvailable()) {
+                throw new BadRequestException("Resource '" + resource.getName() + "' is not currently available for booking");
+            }
+            if (!reservationRepository.findOverlappingExcludingReservation(
+                    resource.getId(), reservation.getId(), ReservationStatus.CANCELLED,
+                    reservation.getEndTime(), reservation.getStartTime()).isEmpty()) {
+                throw new ReservationConflictException(
+                        "Resource '" + resource.getName() + "' is already booked for the reservation time window");
+            }
+        }
         reservation.setStatus(newStatus);
-        return ReservationResponse.from(reservation);
+        return ReservationResponse.from(reservationRepository.save(reservation));
     }
 
     /** ADMIN-only: full update of a reservation's details. */
@@ -116,6 +129,10 @@ public class ReservationService {
         Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Replacement resource not found with id: " + request.resourceId()));
+
+        if (!resource.isAvailable()) {
+            throw new BadRequestException("Resource '" + resource.getName() + "' is not currently available for booking");
+        }
 
         var overlapping = reservationRepository.findOverlappingExcludingReservation(
             resource.getId(), reservation.getId(), ReservationStatus.CANCELLED,

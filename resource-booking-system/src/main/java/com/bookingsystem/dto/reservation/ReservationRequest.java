@@ -3,6 +3,7 @@ package com.bookingsystem.dto.reservation;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,12 +20,14 @@ public record ReservationRequest(
         LocalDateTime startTime,
 
         @NotNull(message = "endTime is required")
+        @Future(message = "endTime must be in the future")
         LocalDateTime endTime,
 
         @NotNull(message = "price is required")
         @DecimalMin(value = "0.0", inclusive = true, message = "price must not be negative")
         BigDecimal price,
 
+        @Size(max = 1000, message = "notes must not exceed 1000 characters")
         String notes
 ) {
 }

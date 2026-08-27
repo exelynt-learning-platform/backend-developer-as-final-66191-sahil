@@ -31,8 +31,15 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.seed.user-password:}")
     private String userPassword;
 
+    @Value("${app.seed.enabled:true}")
+    private boolean seedEnabled;
+
     @Override
     public void run(String... args) {
+        if (!seedEnabled) {
+            log.info("Skipping all seed data because app.seed.enabled is false");
+            return;
+        }
         seedUsers();
         seedResources();
     }

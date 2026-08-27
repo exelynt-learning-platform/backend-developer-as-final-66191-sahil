@@ -23,10 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.time.Instant;
 import java.util.List;
 
 @Configuration
@@ -89,17 +87,17 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(401);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            ErrorResponse body = new ErrorResponse(Instant.now(), 401, "Unauthorized",
+                                ErrorResponse body = ErrorResponse.of(401, "Unauthorized",
                                     "A valid JWT bearer token is required to access this resource",
-                                    request.getRequestURI(), List.of());
+                                    request.getRequestURI());
                             response.getWriter().write(objectMapper.writeValueAsString(body));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(403);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            ErrorResponse body = new ErrorResponse(Instant.now(), 403, "Forbidden",
+                                ErrorResponse body = ErrorResponse.of(403, "Forbidden",
                                     "You do not have permission to perform this action",
-                                    request.getRequestURI(), List.of());
+                                    request.getRequestURI());
                             response.getWriter().write(objectMapper.writeValueAsString(body));
                         })
                 )
@@ -109,12 +107,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
                 || !allowedOrigins.equals(allowedOrigins.trim())) {
             throw new CorsConfigurationException(
-                    "Invalid CORS_ALLOWED_ORIGINS environment variable: configure exactly one explicit browser origin " +
+                    "Invalid CORS_ALLOWED_ORIGINS: configure exactly one explicit browser origin " +
                             "without wildcards, commas, or surrounding whitespace.");
         }
         configuration.setAllowedOrigins(List.of(allowedOrigins));
