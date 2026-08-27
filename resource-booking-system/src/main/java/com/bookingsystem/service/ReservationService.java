@@ -100,7 +100,11 @@ public class ReservationService {
 
     /** ADMIN-only: full update of a reservation's details. */
     @Transactional
-    public ReservationResponse update(Long id, ReservationRequest request) {
+    public ReservationResponse update(Long id, ReservationRequest request, User principal) {
+        if (principal.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Only administrators may update reservations");
+        }
+
         Reservation reservation = findEntity(id);
 
         if (!request.endTime().isAfter(request.startTime())) {

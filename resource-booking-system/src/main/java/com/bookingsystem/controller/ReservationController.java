@@ -39,6 +39,7 @@ public class ReservationController {
     @Operation(summary = "List reservations. ADMIN sees all; USER sees only their own. " +
             "Supports filtering by status/minPrice/maxPrice, pagination and sorting.")
     public ResponseEntity<Page<ReservationResponse>> list(
+            // The service uses the principal's role to determine the query scope.
             @AuthenticationPrincipal User principal,
             @RequestParam(required = false) ReservationStatus status,
             @RequestParam(required = false) BigDecimal minPrice,
@@ -55,8 +56,10 @@ public class ReservationController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Fully update a reservation (ADMIN only)")
-    public ResponseEntity<ReservationResponse> update(@PathVariable Long id, @Valid @RequestBody ReservationRequest request) {
-        return ResponseEntity.ok(reservationService.update(id, request));
+    public ResponseEntity<ReservationResponse> update(@PathVariable Long id,
+                                                       @Valid @RequestBody ReservationRequest request,
+                                                       @AuthenticationPrincipal User principal) {
+        return ResponseEntity.ok(reservationService.update(id, request, principal));
     }
 
     @PutMapping("/{id}/status")
