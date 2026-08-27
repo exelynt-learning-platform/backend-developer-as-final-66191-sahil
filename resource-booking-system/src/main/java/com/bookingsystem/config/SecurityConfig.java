@@ -112,14 +112,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-            .map(String::trim)
-            .filter(origin -> !origin.isEmpty())
-                .collect(Collectors.toList());
-        if (origins.isEmpty() || origins.contains("*")) {
-            throw new IllegalStateException("CORS must specify one or more explicit allowed origins");
+            if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
+                    || !allowedOrigins.equals(allowedOrigins.trim())) {
+                throw new IllegalStateException("CORS must specify exactly one explicit allowed origin");
         }
-        configuration.setAllowedOrigins(origins);
+            configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

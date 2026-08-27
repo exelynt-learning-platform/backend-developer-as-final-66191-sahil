@@ -111,9 +111,17 @@ public class ReservationService {
             throw new BadRequestException("endTime must be after startTime");
         }
 
-        Resource resource = resourceRepository.findById(request.resourceId())
+        Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Replacement resource not found with id: " + request.resourceId()));
+
+        var overlapping = reservationRepository.findOverlappingExcludingReservation(
+            resource.getId(), reservation.getId(), ReservationStatus.CANCELLED,
+            request.endTime(), request.startTime());
+        if (!overlapping.isEmpty()) {
+            throw new ReservationConflictException(
+                "Resource '" + resource.getName() + "' is already booked for the requested time window");
+        }
 
         reservation.setResource(resource);
         reservation.setStartTime(request.startTime());

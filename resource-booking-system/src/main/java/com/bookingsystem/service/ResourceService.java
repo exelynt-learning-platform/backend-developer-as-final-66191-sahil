@@ -2,7 +2,9 @@ package com.bookingsystem.service;
 
 import com.bookingsystem.dto.resource.ResourceRequest;
 import com.bookingsystem.dto.resource.ResourceResponse;
+import com.bookingsystem.exception.ReservationConflictException;
 import com.bookingsystem.exception.ResourceNotFoundException;
+import com.bookingsystem.repository.ReservationRepository;
 import com.bookingsystem.repository.ResourceRepository;
 import com.bookingsystem.repository.ResourceSpecification;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
     public Page<ResourceResponse> list(String type, Boolean available, Pageable pageable) {
@@ -57,7 +60,13 @@ public class ResourceService {
 
     @Transactional
     public void delete(Long id) {
-        var resource = findEntity(id);
+        var resource = resourceRepository.findByIdForUpdate(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
+        if (reservationRepository.existsByResourceIdAndStatusNot(id,
+                com.bookingsystem.entity.ReservationStatus.CANCELLED)) {
+            throw new ReservationConflictException(
+                    "Resource cannot be deleted while it has active reservations");
+        }
         resourceRepository.delete(resource);
     }
 
