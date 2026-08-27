@@ -7,6 +7,7 @@ import com.bookingsystem.repository.ResourceRepository;
 import com.bookingsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,12 @@ public class DataSeeder implements CommandLineRunner {
     private final ResourceRepository resourceRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.admin-password:}")
+    private String adminPassword;
+
+    @Value("${app.seed.user-password:}")
+    private String userPassword;
+
     @Override
     public void run(String... args) {
         seedUsers();
@@ -31,37 +38,42 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
+        if (adminPassword.isBlank() || userPassword.isBlank()) {
+            log.info("Skipping seed users because APP seed passwords are not configured");
+            return;
+        }
+
         if (!userRepository.existsByUsername("admin")) {
             userRepository.save(User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("Admin@123"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .email("admin@bookingsystem.com")
                     .role(Role.ADMIN)
                     .enabled(true)
                     .build());
-            log.info("Seeded ADMIN user -> username: admin / password: Admin@123");
+            log.info("Seeded ADMIN user -> username: admin");
         }
 
         if (!userRepository.existsByUsername("user")) {
             userRepository.save(User.builder()
                     .username("user")
-                    .password(passwordEncoder.encode("User@123"))
+                    .password(passwordEncoder.encode(userPassword))
                     .email("user@bookingsystem.com")
                     .role(Role.USER)
                     .enabled(true)
                     .build());
-            log.info("Seeded USER user -> username: user / password: User@123");
+            log.info("Seeded USER user -> username: user");
         }
 
         if (!userRepository.existsByUsername("user2")) {
             userRepository.save(User.builder()
                     .username("user2")
-                    .password(passwordEncoder.encode("User@123"))
+                    .password(passwordEncoder.encode(userPassword))
                     .email("user2@bookingsystem.com")
                     .role(Role.USER)
                     .enabled(true)
                     .build());
-            log.info("Seeded USER user -> username: user2 / password: User@123");
+            log.info("Seeded USER user -> username: user2");
         }
     }
 

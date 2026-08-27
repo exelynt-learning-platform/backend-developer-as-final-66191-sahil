@@ -108,13 +108,13 @@ The app starts on `http://localhost:8080` by default.
 
 ### Seed Users
 
-On first startup, `DataSeeder` creates the following accounts if they don't already exist:
+When `SEED_ADMIN_PASSWORD` and `SEED_USER_PASSWORD` are configured, `DataSeeder` creates the following accounts on first startup if they don't already exist. Leave these variables blank to disable automatic account seeding:
 
 | Username | Password    | Role  |
 |----------|-------------|-------|
-| `admin`  | `Admin@123` | ADMIN |
-| `user`   | `User@123`  | USER  |
-| `user2`  | `User@123`  | USER  |
+| `admin`  | Value of `SEED_ADMIN_PASSWORD` | ADMIN |
+| `user`   | Value of `SEED_USER_PASSWORD`  | USER  |
+| `user2`  | Value of `SEED_USER_PASSWORD`  | USER  |
 
 It also seeds a handful of sample resources (two rooms, a vehicle, a projector) so the API is immediately usable.
 

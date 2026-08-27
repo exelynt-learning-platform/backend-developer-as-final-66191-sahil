@@ -2,6 +2,8 @@ package com.bookingsystem.service;
 
 import com.bookingsystem.dto.resource.ResourceRequest;
 import com.bookingsystem.dto.resource.ResourceResponse;
+import com.bookingsystem.entity.ReservationStatus;
+import com.bookingsystem.entity.Resource;
 import com.bookingsystem.exception.ReservationConflictException;
 import com.bookingsystem.exception.ResourceNotFoundException;
 import com.bookingsystem.repository.ReservationRepository;
@@ -33,7 +35,7 @@ public class ResourceService {
 
     @Transactional
     public ResourceResponse create(ResourceRequest request) {
-        var resource = com.bookingsystem.entity.Resource.builder()
+        var resource = Resource.builder()
                 .name(request.name())
                 .type(request.type())
                 .description(request.description())
@@ -55,7 +57,7 @@ public class ResourceService {
         if (request.available() != null) {
             resource.setAvailable(request.available());
         }
-        return ResourceResponse.from(resourceRepository.save(resource));
+        return ResourceResponse.from(resource);
     }
 
     @Transactional
@@ -63,14 +65,14 @@ public class ResourceService {
         var resource = resourceRepository.findByIdForUpdate(id)
             .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
         if (reservationRepository.existsByResourceIdAndStatusNot(id,
-                com.bookingsystem.entity.ReservationStatus.CANCELLED)) {
+                ReservationStatus.CANCELLED)) {
             throw new ReservationConflictException(
                     "Resource cannot be deleted while it has active reservations");
         }
         resourceRepository.delete(resource);
     }
 
-    private com.bookingsystem.entity.Resource findEntity(Long id) {
+    private Resource findEntity(Long id) {
         return resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
     }

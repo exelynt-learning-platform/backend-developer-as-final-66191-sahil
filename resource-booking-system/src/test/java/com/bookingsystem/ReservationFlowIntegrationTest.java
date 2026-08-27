@@ -92,4 +92,53 @@ class ReservationFlowIntegrationTest {
     void unauthenticatedRequestIsRejected() throws Exception {
         mockMvc.perform(get("/api/reservations")).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void adminCanUpdateReservationStatus() throws Exception {
+        String userToken = loginAndGetToken("t_user");
+        String adminToken = loginAndGetToken("t_admin");
+        String payload = objectMapper.writeValueAsString(Map.of(
+                "resourceId", resourceId,
+                "startTime", LocalDateTime.now().plusDays(2).toString(),
+                "endTime", LocalDateTime.now().plusDays(2).plusHours(1).toString(),
+                "price", 40.00
+        ));
+
+        String response = mockMvc.perform(post("/api/reservations")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType("application/json")
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long reservationId = objectMapper.readTree(response).get("id").asLong();
+
+        mockMvc.perform(put("/api/reservations/" + reservationId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content("{\"status\":\"CONFIRMED\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CONFIRMED"));
+    }
+
+    @Test
+    void resourceWithActiveReservationCannotBeDeleted() throws Exception {
+        String userToken = loginAndGetToken("t_user");
+        String adminToken = loginAndGetToken("t_admin");
+        String payload = objectMapper.writeValueAsString(Map.of(
+                "resourceId", resourceId,
+                "startTime", LocalDateTime.now().plusDays(3).toString(),
+                "endTime", LocalDateTime.now().plusDays(3).plusHours(1).toString(),
+                "price", 50.00
+        ));
+
+        mockMvc.perform(post("/api/reservations")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType("application/json")
+                        .content(payload))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/resources/" + resourceId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isConflict());
+    }
 }

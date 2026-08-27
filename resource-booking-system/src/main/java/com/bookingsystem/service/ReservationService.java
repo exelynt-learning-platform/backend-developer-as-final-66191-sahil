@@ -95,7 +95,7 @@ public class ReservationService {
     public ReservationResponse updateStatus(Long id, ReservationStatus newStatus) {
         Reservation reservation = findEntity(id);
         reservation.setStatus(newStatus);
-        return ReservationResponse.from(reservationRepository.save(reservation));
+        return ReservationResponse.from(reservation);
     }
 
     /** ADMIN-only: full update of a reservation's details. */
@@ -129,7 +129,7 @@ public class ReservationService {
         reservation.setPrice(request.price());
         reservation.setNotes(request.notes());
 
-        return ReservationResponse.from(reservationRepository.save(reservation));
+        return ReservationResponse.from(reservation);
     }
 
     /** Owner may cancel their own PENDING/CONFIRMED reservation; ADMIN may cancel any. */
@@ -143,7 +143,7 @@ public class ReservationService {
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
-        return ReservationResponse.from(reservationRepository.save(reservation));
+        return ReservationResponse.from(reservation);
     }
 
     /** ADMIN-only: permanently delete a reservation. */
