@@ -109,12 +109,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         if (allowedOrigins.isBlank() || allowedOrigins.contains("*") || allowedOrigins.contains(",")
                 || !allowedOrigins.equals(allowedOrigins.trim())) {
             throw new CorsConfigurationException(
-                    "Invalid CORS_ALLOWED_ORIGINS: configure exactly one explicit browser origin " +
+                    "Invalid CORS_ALLOWED_ORIGINS environment variable: configure exactly one explicit browser origin " +
                             "without wildcards, commas, or surrounding whitespace.");
         }
         configuration.setAllowedOrigins(List.of(allowedOrigins));
